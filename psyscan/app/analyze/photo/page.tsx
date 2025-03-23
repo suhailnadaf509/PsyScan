@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Camera, Upload, RefreshCw, ArrowLeft } from "lucide-react"
-import { EmotionResults } from "@/components/analysis/emotion-results"
+import { EmotionResults } from "@/components/emotion-results"
 
 export default function PhotoAnalysisPage() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null)

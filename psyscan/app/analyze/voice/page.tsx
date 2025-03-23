@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Mic, Square, RefreshCw, ArrowLeft, Play, Pause } from "lucide-react"
-import { EmotionResults } from "@/components/analysis/emotion-results"
+import { EmotionResults } from "@/components/emotion-results"
 
 export default function VoiceAnalysisPage() {
   const [isRecording, setIsRecording] = useState(false)
