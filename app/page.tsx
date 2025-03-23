@@ -1,9 +1,14 @@
-import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Camera, Mic, MessageSquare, BarChart3 } from "lucide-react"
+"use client";
+import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Camera, Mic, MessageSquare, BarChart3 } from "lucide-react";
+import LoginPage from "@/components/LoginPage";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useState } from "react";
 
 export default function HomePage() {
+  const [showLoginModal, setShowLoginModal] = useState(false);
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950">
       <header className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-lg">
@@ -22,7 +27,13 @@ export default function HomePage() {
                   className="h-8 w-8"
                 >
                   <defs>
-                    <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient
+                      id="logo-gradient"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
                       <stop offset="0%" stopColor="#8B5CF6" />
                       <stop offset="100%" stopColor="#EC4899" />
                     </linearGradient>
@@ -54,11 +65,15 @@ export default function HomePage() {
             Your Mental Wellness Companion
           </h2>
           <p className="mx-auto mb-8 max-w-2xl text-lg text-gray-700 dark:text-gray-300">
-            Track and understand your emotional well-being through photos, voice, and conversation. Get personalized
-            insights to help you on your wellness journey.
+            Track and understand your emotional well-being through photos,
+            voice, and conversation. Get personalized insights to help you on
+            your wellness journey.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white">
+            <Button
+              className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white"
+              onClick={() => setShowLoginModal(true)}
+            >
               Get Started
             </Button>
             <Button
@@ -69,7 +84,12 @@ export default function HomePage() {
             </Button>
           </div>
         </section>
-
+        <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
+          <DialogContent className="max-w-md">
+            <LoginPage />{" "}
+            {/* Ensure LoginPage is designed to handle user authentication */}
+          </DialogContent>
+        </Dialog>
         <section className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           <Link href="/analyze/photo">
             <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-105 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-blue-200 dark:border-blue-800">
@@ -77,9 +97,12 @@ export default function HomePage() {
                 <Camera className="h-8 w-8 text-white" />
               </div>
               <CardContent className="p-6">
-                <h3 className="mb-2 text-xl font-bold text-blue-700 dark:text-blue-300">Photo & Video Analysis</h3>
+                <h3 className="mb-2 text-xl font-bold text-blue-700 dark:text-blue-300">
+                  Photo & Video Analysis
+                </h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Upload photos or record videos to analyze your facial expressions and body language.
+                  Upload photos or record videos to analyze your facial
+                  expressions and body language.
                 </p>
               </CardContent>
             </Card>
@@ -91,9 +114,12 @@ export default function HomePage() {
                 <Mic className="h-8 w-8 text-white" />
               </div>
               <CardContent className="p-6">
-                <h3 className="mb-2 text-xl font-bold text-purple-700 dark:text-purple-300">Voice Analysis</h3>
+                <h3 className="mb-2 text-xl font-bold text-purple-700 dark:text-purple-300">
+                  Voice Analysis
+                </h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Record voice memos to analyze your tone, speech patterns, and emotional cues.
+                  Record voice memos to analyze your tone, speech patterns, and
+                  emotional cues.
                 </p>
               </CardContent>
             </Card>
@@ -105,9 +131,12 @@ export default function HomePage() {
                 <MessageSquare className="h-8 w-8 text-white" />
               </div>
               <CardContent className="p-6">
-                <h3 className="mb-2 text-xl font-bold text-pink-700 dark:text-pink-300">Chat Analysis</h3>
+                <h3 className="mb-2 text-xl font-bold text-pink-700 dark:text-pink-300">
+                  Chat Analysis
+                </h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Chat with our AI to analyze your text responses for signs of depression or anxiety.
+                  Chat with our AI to analyze your text responses for signs of
+                  depression or anxiety.
                 </p>
               </CardContent>
             </Card>
@@ -120,7 +149,8 @@ export default function HomePage() {
               How It Works
             </h2>
             <p className="mx-auto max-w-2xl text-gray-700 dark:text-gray-300">
-              Our AI analyzes multiple inputs to provide a comprehensive assessment of your emotional well-being.
+              Our AI analyzes multiple inputs to provide a comprehensive
+              assessment of your emotional well-being.
             </p>
           </div>
 
@@ -131,7 +161,8 @@ export default function HomePage() {
               </div>
               <h3 className="mb-2 text-lg font-semibold">Capture</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Upload photos, record videos, or voice memos, or chat with our AI.
+                Upload photos, record videos, or voice memos, or chat with our
+                AI.
               </p>
             </div>
 
@@ -187,7 +218,8 @@ export default function HomePage() {
               </div>
               <h3 className="mb-2 text-lg font-semibold">Insights</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Get personalized insights and recommendations for your well-being.
+                Get personalized insights and recommendations for your
+                well-being.
               </p>
             </div>
           </div>
@@ -199,16 +231,27 @@ export default function HomePage() {
           <div className="flex flex-col items-center justify-between md:flex-row">
             <div className="mb-4 md:mb-0">
               <h2 className="text-xl font-bold">PsyScan</h2>
-              <p className="text-sm text-violet-200">Your mental health analysis tool</p>
+              <p className="text-sm text-violet-200">
+                Your mental health analysis tool
+              </p>
             </div>
             <div className="flex space-x-4">
-              <Link href="/privacy" className="text-sm text-violet-200 hover:text-white">
+              <Link
+                href="/privacy"
+                className="text-sm text-violet-200 hover:text-white"
+              >
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="text-sm text-violet-200 hover:text-white">
+              <Link
+                href="/terms"
+                className="text-sm text-violet-200 hover:text-white"
+              >
                 Terms of Service
               </Link>
-              <Link href="/contact" className="text-sm text-violet-200 hover:text-white">
+              <Link
+                href="/contact"
+                className="text-sm text-violet-200 hover:text-white"
+              >
                 Contact Us
               </Link>
             </div>
@@ -219,6 +262,5 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
-
