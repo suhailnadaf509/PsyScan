@@ -1,205 +1,113 @@
 "use client";
 
-import type React from "react";
-
-import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, RefreshCw } from "lucide-react";
-import { EmotionResults } from "@/components/emotion-results";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import { EmotionResults } from "@/components/text_result";
+import { RefreshCw } from "lucide-react";
 
-type Message = {
-  id: string;
-  content: string;
-  sender: "user" | "bot";
-  timestamp: Date;
-};
-
-const initialMessages: Message[] = [
-  {
-    id: "1",
-    content: "Hi there! I'm here to chat with you. How are you feeling today?",
-    sender: "bot",
-    timestamp: new Date(),
-  },
-];
-
-const botResponses = [
-  "Can you tell me more about that?",
-  "How long have you been feeling this way?",
-  "What do you think might be contributing to these feelings?",
-  "Have you noticed any changes in your sleep or appetite recently?",
-  "Do you have anyone you can talk to about these feelings?",
-  "What activities usually help you feel better?",
-  "On a scale of 1-10, how would you rate your mood today?",
-  "Have you tried any relaxation techniques or mindfulness practices?",
-  "Is there anything specific that's been on your mind lately?",
-  "How have your energy levels been recently?",
-];
-
-export default function ChatAnalysisPage() {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [inputValue, setInputValue] = useState("");
+export default function TextAnalysisPage() {
+  const [text, setText] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
-  const [messageCount, setMessageCount] = useState(0);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState(0);
+  const [analysisResult, setAnalysisResult] = useState<{
+    depression_score: number;
+    mood_assessment: string;
+  } | null>(null);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  const analyzeText = async () => {
+    if (!text.trim()) return;
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const handleSendMessage = () => {
-    if (inputValue.trim() === "") return;
-
-    const newUserMessage: Message = {
-      id: Date.now().toString(),
-      content: inputValue,
-      sender: "user",
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, newUserMessage]);
-    setInputValue("");
-    setMessageCount((prev) => prev + 1);
-
-    // Simulate bot response after a short delay
-    setTimeout(() => {
-      const randomResponse =
-        botResponses[Math.floor(Math.random() * botResponses.length)];
-      const newBotMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: randomResponse,
-        sender: "bot",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, newBotMessage]);
-    }, 1000);
-
-    // Check if we've reached enough messages for analysis
-    if (messageCount >= 4) {
-      // Enable the analyze button
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSendMessage();
-    }
-  };
-
-  const startAnalysis = () => {
     setIsAnalyzing(true);
+    setProgress(0);
 
-    // Simulate analysis process
-    setTimeout(() => {
+    // Start progress animation
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 95) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 5;
+      });
+    }, 150);
+
+    try {
+      const response = await fetch("http://localhost:5000/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const result = await response.json();
+      setAnalysisResult(result);
+
+      // Ensure progress reaches 100%
+      clearInterval(interval);
+      setProgress(100);
+
+      setTimeout(() => {
+        setIsAnalyzing(false);
+        setAnalysisComplete(true);
+      }, 500);
+    } catch (error) {
+      console.error("Error analyzing text:", error);
+      clearInterval(interval);
       setIsAnalyzing(false);
-      setAnalysisComplete(true);
-    }, 3000);
+      // Handle error state here
+    }
   };
 
-  const resetChat = () => {
-    setMessages(initialMessages);
-    setMessageCount(0);
+  const resetAnalysis = () => {
+    setText("");
     setAnalysisComplete(false);
+    setAnalysisResult(null);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-rose-50 dark:from-pink-950 dark:to-rose-950">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-fuchsia-50 dark:from-purple-950 dark:to-fuchsia-950">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-6 flex items-center">
-          <Link href="/" className="mr-4">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-rose-600">
-            Chat Analysis
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-fuchsia-600">
+            Text Mood Analysis
           </h1>
         </div>
 
         <div className="grid gap-8 md:grid-cols-2">
           <div>
-            <Card className="overflow-hidden border-pink-200 dark:border-pink-800">
-              <div className="bg-gradient-to-r from-pink-500 to-rose-500 p-4 text-white">
-                <h2 className="text-xl font-semibold">Chat with AI</h2>
-                <p className="text-sm text-pink-100">
-                  Have a conversation to analyze your emotional state
+            <Card className="overflow-hidden border-purple-200 dark:border-purple-800">
+              <div className="bg-gradient-to-r from-purple-500 to-fuchsia-500 p-4 text-white">
+                <h2 className="text-xl font-semibold">Share Your Thoughts</h2>
+                <p className="text-sm text-purple-100">
+                  Write about how you're feeling for a more accurate analysis
                 </p>
               </div>
-              <CardContent className="p-0">
-                <div className="flex h-[500px] flex-col">
-                  <div className="flex-1 overflow-y-auto p-4">
-                    <div className="space-y-4">
-                      {messages.map((message) => (
-                        <div
-                          key={message.id}
-                          className={`flex ${
-                            message.sender === "user"
-                              ? "justify-end"
-                              : "justify-start"
-                          }`}
-                        >
-                          <div
-                            className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                              message.sender === "user"
-                                ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white"
-                                : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
-                            }`}
-                          >
-                            <p>{message.content}</p>
-                            <p className="mt-1 text-right text-xs opacity-70">
-                              {message.timestamp.toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                      <div ref={messagesEndRef} />
-                    </div>
-                  </div>
+              <CardContent className="p-6">
+                <div className="space-y-6">
+                  <Textarea
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    placeholder="Write your thoughts here... (at least 50 words for better analysis)"
+                    className="min-h-32 border-purple-200 dark:border-purple-800"
+                    disabled={isAnalyzing || analysisComplete}
+                  />
 
-                  <div className="border-t border-gray-200 p-4 dark:border-gray-700">
-                    <div className="flex space-x-2">
-                      <Input
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Type your message..."
-                        className="border-pink-200 dark:border-pink-800"
-                      />
-                      <Button
-                        onClick={handleSendMessage}
-                        className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    <div className="mt-4 flex justify-between">
-                      <p className="text-sm text-gray-500">
-                        {messageCount < 5
-                          ? `Send ${
-                              5 - messageCount
-                            } more messages for analysis`
-                          : "Ready for analysis"}
-                      </p>
-
-                      {messageCount >= 5 && !analysisComplete && (
+                  <div className="flex flex-wrap gap-3 justify-center">
+                    {!analysisComplete ? (
+                      <>
                         <Button
-                          onClick={startAnalysis}
-                          disabled={isAnalyzing}
-                          variant="outline"
-                          className="border-pink-500 text-pink-600"
+                          onClick={analyzeText}
+                          disabled={isAnalyzing || !text.trim()}
+                          className="bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:from-purple-600 hover:to-fuchsia-600"
                         >
                           {isAnalyzing ? (
                             <>
@@ -207,22 +115,34 @@ export default function ChatAnalysisPage() {
                               Analyzing...
                             </>
                           ) : (
-                            "Analyze Conversation"
+                            "Analyze Text"
                           )}
                         </Button>
-                      )}
-
-                      {analysisComplete && (
-                        <Button
-                          onClick={resetChat}
-                          variant="outline"
-                          className="border-gray-300 text-gray-600"
-                        >
-                          Start New Chat
-                        </Button>
-                      )}
-                    </div>
+                      </>
+                    ) : (
+                      <Button
+                        onClick={resetAnalysis}
+                        variant="outline"
+                        className="border-gray-300 text-gray-600"
+                      >
+                        Start New Analysis
+                      </Button>
+                    )}
                   </div>
+
+                  {isAnalyzing && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Analyzing text patterns...</span>
+                        <span>{progress}%</span>
+                      </div>
+                      <Progress
+                        value={progress}
+                        className="h-2 bg-purple-100"
+                        indicatorClassName="bg-gradient-to-r from-purple-500 to-fuchsia-500"
+                      />
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -230,76 +150,76 @@ export default function ChatAnalysisPage() {
 
           <div>
             {analysisComplete ? (
-              <Card className="border-rose-200 dark:border-rose-800">
-                <div className="bg-gradient-to-r from-rose-500 to-red-500 p-4 text-white">
+              <Card className="border-fuchsia-200 dark:border-fuchsia-800">
+                <div className="bg-gradient-to-r from-fuchsia-500 to-pink-500 p-4 text-white">
                   <h2 className="text-xl font-semibold">Analysis Results</h2>
-                  <p className="text-sm text-rose-100">
+                  <p className="text-sm text-fuchsia-100">
                     Your emotional well-being assessment
                   </p>
                 </div>
                 <CardContent className="p-6">
-                  <EmotionResults />
+                  <EmotionResults analysisResult={analysisResult} />
                 </CardContent>
               </Card>
             ) : (
-              <Card className="border-rose-200 dark:border-rose-800 bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-900/30 dark:to-red-900/30">
-                <div className="bg-gradient-to-r from-rose-500 to-red-500 p-4 text-white">
+              <Card className="border-fuchsia-200 dark:border-fuchsia-800 bg-gradient-to-br from-fuchsia-50 to-pink-50 dark:from-fuchsia-900/30 dark:to-pink-900/30">
+                <div className="bg-gradient-to-r from-fuchsia-500 to-pink-500 p-4 text-white">
                   <h2 className="text-xl font-semibold">How It Works</h2>
-                  <p className="text-sm text-rose-100">
-                    Understanding the chat analysis process
+                  <p className="text-sm text-fuchsia-100">
+                    Understanding the text analysis process
                   </p>
                 </div>
                 <CardContent className="p-6">
                   <div className="space-y-6">
                     <div className="flex items-start space-x-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-900 dark:text-rose-300">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-fuchsia-100 text-fuchsia-600 dark:bg-fuchsia-900 dark:text-fuchsia-300">
                         1
                       </div>
                       <div>
-                        <h3 className="font-medium text-rose-700 dark:text-rose-300">
-                          Have a Conversation
+                        <h3 className="font-medium text-fuchsia-700 dark:text-fuchsia-300">
+                          Share Your Thoughts
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Chat naturally with our AI about how you're feeling
-                          and what's on your mind.
+                          Write about how you're feeling or what's on your mind.
+                          The more details, the better the analysis.
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-start space-x-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-900 dark:text-rose-300">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-fuchsia-100 text-fuchsia-600 dark:bg-fuchsia-900 dark:text-fuchsia-300">
                         2
                       </div>
                       <div>
-                        <h3 className="font-medium text-rose-700 dark:text-rose-300">
+                        <h3 className="font-medium text-fuchsia-700 dark:text-fuchsia-300">
                           AI Analysis
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Our AI analyzes your language patterns, word choice,
-                          and emotional expressions.
+                          Our AI analyzes your text for emotional patterns and
+                          indicators of mental well-being.
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-start space-x-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-900 dark:text-rose-300">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-fuchsia-100 text-fuchsia-600 dark:bg-fuchsia-900 dark:text-fuchsia-300">
                         3
                       </div>
                       <div>
-                        <h3 className="font-medium text-rose-700 dark:text-rose-300">
+                        <h3 className="font-medium text-fuchsia-700 dark:text-fuchsia-300">
                           Get Your Results
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           Receive a detailed analysis of your emotional state
-                          and well-being score.
+                          and well-being score with personalized insights.
                         </p>
                       </div>
                     </div>
 
-                    <div className="rounded-lg bg-rose-100 p-4 dark:bg-rose-900/50">
-                      <p className="text-sm text-rose-700 dark:text-rose-300">
-                        <strong>Privacy Note:</strong> Your conversation is
-                        processed securely and is not stored permanently. We
+                    <div className="rounded-lg bg-fuchsia-100 p-4 dark:bg-fuchsia-900/50">
+                      <p className="text-sm text-fuchsia-700 dark:text-fuchsia-300">
+                        <strong>Privacy Note:</strong> Your text inputs are
+                        processed securely and are not stored permanently. We
                         prioritize your privacy and data security.
                       </p>
                     </div>
